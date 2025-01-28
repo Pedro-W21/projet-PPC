@@ -37,7 +37,7 @@
 
 ## Lights
 
-- a un array partagé de 4 signaux, un lock sur les feux, et gère les signaux système
+- a un array partagé de 4 feux, un lock sur les feux, et gère les signaux système
 - en "normal mode", inverse les états des signaux toutes les N secondes
 - lorsqu'il reçoit un signal, le handler prend l'argument de la route source avec le signal et met en rouge le reste
 
