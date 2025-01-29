@@ -4,22 +4,18 @@ import random
 
 class Normal(Process):
 
-    def __init__(self, compteur_normal, queueN, queueS, queueO, queueE):
+    def __init__(self, compteur_normal, keyQueues):
         super().__init__()
         self.compteur_normal = compteur_normal
-        self.queueN = queueN
-        self.queueS = queueS
-        self.queueO = queueO
-        self.queueE = queueE
+        self.keyQueues = keyQueues
 
     def normal_traffic_gen(self):
         #choisit de manière random où mettre une voiture
-        chemin = ['queueN','queueS','queueO','queueE']
         depart = random.randint(0,3)
         arrivee = random.randint(0,3)
         while arrivee == depart :
             arrivee = random.randint(0,3)
-        texte = f"{chemin[depart]}_{chemin[arrivee]}"
+        texte = f"{self.keyQueues[depart]}_{self.keyQueues[arrivee]}"
         mq.send(texte, type=1)
             
 

@@ -15,8 +15,7 @@
 - lock le compteur de voitures prioritaires
     - rajoute la voiture dans la message queue qu'il faut, type = 2
     - rajoute la messagequeue choisie dans la messagequeue du traffic prioritaire
-    - envoie un signal à Lights 
-- **QUE UN SEUL PRIORITY A LA FOIS A PRIORI**
+    - envoie un signal à Lights
 
 ## coordinator
 
