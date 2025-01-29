@@ -10,6 +10,7 @@ class Normal(Process):
         self.lock_compteur_normal = lock_compteur_global
         self.compteur_global = compteur_global #compteur global de nombre de voitures normales
         self.id = 0
+        self.messageQueues = [sysv_ipc.messageQueue(key) for key in keyQueues]
 
     def run(self):
         while True:
@@ -25,7 +26,7 @@ class Normal(Process):
                 while arrivee == depart :
                     arrivee = random.randint(0,3)
                 texte = f"{self.id}_{self.keyQueues[depart]}_{self.keyQueues[arrivee]}"
-                mq = sysv_ipc.MessageQueue(self.keyQueues[depart])
+                mq = self.messageQueues[depart]
                 mq.send(texte, type=1)
                 with self.lock_compteur_global:
                     self.compteur_global += 1

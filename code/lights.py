@@ -9,3 +9,7 @@ class Lights(Process):
         self.traffic_lights = lights_array
         self.keyQueues = key_queues
         self.lock = lights_array_lock
+
+    def run(self):
+        if sig == signal.SIGUSR1:
+            return
