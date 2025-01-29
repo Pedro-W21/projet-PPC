@@ -7,7 +7,7 @@ class Normal(Process):
     def __init__(self, compteur_global, keyQueues, lock_compteur_global):
         super().__init__()
         self.keyQueues = keyQueues
-        self.lock_compteur_normal = lock_compteur_global
+        self.lock_compteur_global = lock_compteur_global
         self.compteur_global = compteur_global #compteur global de nombre de voitures normales
         self.id = 0
         self.messageQueues = [sysv_ipc.messageQueue(key) for key in keyQueues]

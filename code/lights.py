@@ -1,15 +1,51 @@
-import random
+import random, signal, time
 from multiprocessing import Process
 
 
 class Lights(Process):
 
-    def __init__(self, lights_array, lights_array_lock, key_queues):
+    def __init__(self, lights_array, lights_array_lock, key_queues, chemin_priorite_lock, mqpriorite):
         super().__init__()
-        self.traffic_lights = lights_array
+        self.traffic_lights = lights_array #array de 4 elements 0 ou 1
         self.keyQueues = key_queues
         self.lock = lights_array_lock
+        self.lockprio = chemin_priorite_lock #lock pour la variable qui stocke le chemin d'où vient le véhicule prioritaire
+        self.mqpriorite = mqpriorite #chemin d'où vient le véhicule prioritaire
+
+    def handler(self,sig,frame):
+        if sig == signal.SIGUSR1:
+            #mettre tous les array à 0 sauf celui du chemin d'où vient la priorité
+            with self.lockprio:
+                for i in self.traffic_lights:
+                    if i == self.mqpriorite:
+                        self.traffic_lights[i] == 1
+                    else:
+                        self.traffic_lights[i] == 0
+
+            
 
     def run(self):
-        if sig == signal.SIGUSR1:
-            return
+        signal.signal(signal.SIGUSR1, self.handler)
+        #mode normal:
+        while True:
+            with self.lock:
+                #vérifie si on est bien dans l'état normal et pas prioritaire, c'est-à-dire 2 feux verts pour 2 feux rouges et non 1 feu vert pour 3 feux rouges
+                c = 0
+                for j in self.traffic_lights:
+                    if j == 1:
+                        c += 1
+                #si on est en mode priorité, change pour redevenir normal
+                if c != 2:
+                    self.traffic_lights[0] = 1
+                    self.traffic_lights[1] = 0
+                    self.traffic_lights[2] = 1
+                    self.traffic_lights[3] = 0
+                #puis on fait le négatif
+                for i in self.traffic_lights:
+                    if i == 0:
+                        i = 1
+                    else:
+                        i = 0
+                
+
+        
