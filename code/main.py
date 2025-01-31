@@ -4,6 +4,7 @@ import normal
 import priority
 import lights
 import coordinator
+import sender
 
 MQ_KEYS = [128, 256, 512, 1024]
 
@@ -36,7 +37,8 @@ if __name__ == "__main__":
     the_coordinator = coordinator.Coordinator(compteur_limiteur_normal, lock_limiteur_normal, compteur_limiteur_prio, lock_limiteur_prio, traffic_lights, traffic_lights_lock, MQ_KEYS, the_lights.pid, sent_messages_queue, chemin_prio_lock, chemin_prio_value)
     the_coordinator.start()
 
-
+    the_sender = sender.Sender(sent_messages_queue)
+    the_sender.start()
 
 
     for key in MQ_KEYS:
