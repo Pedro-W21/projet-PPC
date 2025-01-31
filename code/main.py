@@ -1,4 +1,4 @@
-from multiprocessing import Process, Lock, Array, Value
+from multiprocessing import Process, Lock, Array, Value, Queue
 import sysv_ipc
 import normal
 import priority
@@ -10,6 +10,10 @@ MQ_KEYS = [128, 256, 512, 1024]
 if __name__ == "__main__":
     for key in MQ_KEYS:        
         mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
+
+    sent_messages_queue = Queue(1000)
+    chemin_prio_lock = Lock()
+    chemin_prio_value = Value('i', 0, lock=False)
 
     compteur_limiteur_normal = Value('i', 0, lock=False)
     lock_limiteur_normal = Lock()
@@ -26,10 +30,10 @@ if __name__ == "__main__":
     traffic_lights = Array('i', 4, lock=False)
     traffic_lights_lock = Lock()
     
-    the_lights = lights.Lights(traffic_lights, traffic_lights_lock, MQ_KEYS)
+    the_lights = lights.Lights(traffic_lights, traffic_lights_lock, MQ_KEYS, chemin_prio_lock, chemin_prio_value)
     the_lights.start()
 
-    the_coordinator = coordinator.Coordinator(compteur_limiteur_normal, lock_limiteur_normal, compteur_limiteur_prio, lock_limiteur_prio, traffic_lights, traffic_lights_lock, MQ_KEYS)
+    the_coordinator = coordinator.Coordinator(compteur_limiteur_normal, lock_limiteur_normal, compteur_limiteur_prio, lock_limiteur_prio, traffic_lights, traffic_lights_lock, MQ_KEYS, the_lights.pid, sent_messages_queue, chemin_prio_lock, chemin_prio_value)
     the_coordinator.start()
 
 
