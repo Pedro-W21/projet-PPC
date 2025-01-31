@@ -1,4 +1,4 @@
-import random, signal, time
+import signal, time
 from multiprocessing import Process
 
 
@@ -7,7 +7,7 @@ class Lights(Process):
     def __init__(self, lights_array, lights_array_lock, key_queues, chemin_priorite_lock, mqpriorite):
         super().__init__()
         self.traffic_lights = lights_array #array de 4 elements 0 ou 1
-        self.keyQueues = key_queues
+        self.keyQueues = key_queues #liste des key pour accéder aux 4 messageQueue/chemins
         self.lock = lights_array_lock
         self.lockprio = chemin_priorite_lock #lock pour la variable qui stocke le chemin d'où vient le véhicule prioritaire
         self.mqpriorite = mqpriorite #chemin d'où vient le véhicule prioritaire
@@ -28,6 +28,7 @@ class Lights(Process):
         signal.signal(signal.SIGUSR1, self.handler)
         #mode normal:
         while True:
+            time.sleep(2) #les lumières changent toutes les 2 sec
             with self.lock:
                 #vérifie si on est bien dans l'état normal et pas prioritaire, c'est-à-dire 2 feux verts pour 2 feux rouges et non 1 feu vert pour 3 feux rouges
                 c = 0
