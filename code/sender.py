@@ -45,4 +45,4 @@ class Sender(Process):
                 print(f"Exception occurred: {e}")
 
             # Sleep briefly to prevent high CPU usage
-            time.sleep(0.1)
+            time.sleep(0.001)

@@ -36,13 +36,16 @@ class Coordinator(Process):
         self.sent_messages_queue = sent_message_queue
         self.chemin_prio_lock = chemin_priorite_lock
         self.mq_priorite = mqpriorite
+        self.tick = 0
 
 
     def send_car_passed(self, car:Car):
-        self.sent_messages_queue.put(f"car {car.id} {car.start} {car.end} {car.car_type} PASSED")
+        self.sent_messages_queue.put(f"PASSED {car.id} {car.start} {car.end} {car.car_type}")
 
     def run(self):
         while True:
+            print(f"--------------------\n TICK COORD {self.tick}")
+            self.tick += 1
             oldest_prio = None
             for i in range(4):
                 if self.hanging_prio_cars[i] == None:
@@ -65,16 +68,30 @@ class Coordinator(Process):
                 with self.lock_prio:
                     self.compteur_prio.value -= 1
                 with self.chemin_prio_lock:
-                    self.mq_priorite.value = self.hanging_prio_cars[oldest_prio].start
+                    self.mq_priorite.value = oldest_prio
                 # send signal to Lights
-                os.kill(self.traffic_lights_pid, signal.SIGKILL)
+                os.kill(self.traffic_lights_pid, signal.SIGUSR1)
+                #print(oldest_prio, self.hanging_prio_cars[oldest_prio].start)
                 while True:
-                    with self.traffic_lights_lock:
-                        if self.traffic_lights[oldest_prio]:
-                            break
-                    time.sleep(0.01)
-                self.send_car_passed(self.hanging_normal_cars[oldest_prio])
-                self.hanging_normal_cars[oldest_prio] = None
+                    #with self.traffic_lights_lock:
+                        print(self.traffic_lights[oldest_prio])
+                        with self.chemin_prio_lock:
+                            if self.mq_priorite.value == 5:
+                                self.mq_priorite.value = 6
+                                break
+                        #print("IN TRAFFIC LIGHTS LOCK")
+                        time.sleep(0.001)
+                #time.sleep(1)
+                while True:
+                    #with self.traffic_lights_lock:
+                        print(self.traffic_lights[oldest_prio])
+                        with self.chemin_prio_lock:
+                            if self.mq_priorite.value == 7:
+                                break
+                        #print("IN TRAFFIC LIGHTS LOCK")
+                        time.sleep(0.001)
+                self.send_car_passed(self.hanging_prio_cars[oldest_prio])
+                self.hanging_prio_cars[oldest_prio] = None
             else:
                 with self.traffic_lights_lock:
                     oldest_passing_normal = None

@@ -3,9 +3,18 @@ import socket
 HOST = "localhost"
 PORT = 2025
 
-if __name__ == "__main__":
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        client_socket.connect((HOST, PORT))
+class Display:
+    def __init__(self):
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print("Connection réussie")
+
+    def listening_loop(self):
         while True:
-            data = client_socket.recv(1024)
+            data = self.client_socket.recv(1024)
             print("DATA : ", data.decode())
+
+if __name__ == "__main__":
+    client = Display()
+    client.listening_loop()
+        
+        

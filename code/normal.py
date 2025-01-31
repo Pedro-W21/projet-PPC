@@ -4,13 +4,14 @@ import random
 
 class Normal(Process):
 
-    def __init__(self, compteur_global, keyQueues, lock_compteur_global):
+    def __init__(self, compteur_global, keyQueues, lock_compteur_global, sent_messages_queue):
         super().__init__()
         self.keyQueues = keyQueues
         self.lock_compteur_global = lock_compteur_global
         self.compteur_global = compteur_global #compteur global de nombre de voitures normales
         self.id = 0
         self.messageQueues = [sysv_ipc.MessageQueue(key) for key in keyQueues]
+        self.sent_messages_queue = sent_messages_queue
 
     def run(self):
         while True:
@@ -19,15 +20,18 @@ class Normal(Process):
                     compteur_temporaire = self.compteur_global.value
             #boucle principale
             if compteur_temporaire <= 100:
+                #print("TICK NORMAL")
                 #choisit de manière random où mettre une voiture
                 depart = random.randint(0,3)
                 arrivee = random.randint(0,3)
                 #pour éviter que le chemin du départ soit l'arrivée
                 while arrivee == depart :
                     arrivee = random.randint(0,3)
-                texte = f"{self.id}_{self.keyQueues[depart]}_{self.keyQueues[arrivee]}"
+                texte = f"{self.id}_{depart}_{arrivee}"
+                #print("adding normal", texte)
                 mq = self.messageQueues[depart]
                 mq.send(texte, type=1)
+                self.sent_messages_queue.put(f"NEW {self.id} {depart} {arrivee} 1")
                 with self.lock_compteur_global:
                     self.compteur_global.value += 1
                     compteur_temporaire = self.compteur_global.value
