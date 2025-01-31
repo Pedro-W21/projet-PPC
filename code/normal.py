@@ -10,13 +10,13 @@ class Normal(Process):
         self.lock_compteur_global = lock_compteur_global
         self.compteur_global = compteur_global #compteur global de nombre de voitures normales
         self.id = 0
-        self.messageQueues = [sysv_ipc.messageQueue(key) for key in keyQueues]
+        self.messageQueues = [sysv_ipc.MessageQueue(key) for key in keyQueues]
 
     def run(self):
         while True:
             #on regarde une première fois le compteur global
             with self.lock_compteur_global:
-                    compteur_temporaire = self.compteur_global
+                    compteur_temporaire = self.compteur_global.value
             #boucle principale
             if compteur_temporaire <= 100:
                 #choisit de manière random où mettre une voiture
@@ -29,6 +29,6 @@ class Normal(Process):
                 mq = self.messageQueues[depart]
                 mq.send(texte, type=1)
                 with self.lock_compteur_global:
-                    self.compteur_global += 1
-                    compteur_temporaire = self.compteur_global
+                    self.compteur_global.value += 1
+                    compteur_temporaire = self.compteur_global.value
                 self.id += 1

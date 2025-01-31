@@ -16,7 +16,7 @@ class Car:
 
 def car_from_string(car_message, car_type) -> Car:
     split_message = car_message.split("_")
-    Car(car_type, int(split_message[0]), int(split_message[1]), int(split_message[2]))
+    return Car(car_type, int(split_message[0]), int(split_message[1]), int(split_message[2]))
 
 class Coordinator(Process):
 
@@ -48,24 +48,24 @@ class Coordinator(Process):
                 if self.hanging_prio_cars[i] == None:
                     try:
                         car_message, ty = self.message_queues[i].receive(type=2, block=False)
-                        self.hanging_prio_cars[i] = car_from_string(car_message, ty)
+                        self.hanging_prio_cars[i] = car_from_string(car_message.decode(), ty)
                         if oldest_prio == None:
                             oldest_prio = i
-                        elif self.hanging_prio_cars[i].id < self.hanging_prio_cars[oldest_prio] and self.hanging_prio_cars[i-1] == None:
+                        elif self.hanging_prio_cars[i].id < self.hanging_prio_cars[oldest_prio].id and self.hanging_prio_cars[i-1] == None:
                             oldest_prio = i
                          
                     except sysv_ipc.BusyError:
                         pass
                 elif oldest_prio == None:
                     oldest_prio = i
-                elif self.hanging_prio_cars[i].id < self.hanging_prio_cars[oldest_prio] and self.hanging_prio_cars[i-1] == None:
+                elif self.hanging_prio_cars[i] != None and self.hanging_prio_cars[i].id < self.hanging_prio_cars[oldest_prio].id and self.hanging_prio_cars[i-1] == None:
                     oldest_prio = i
                 
             if oldest_prio != None:
                 with self.lock_prio:
                     self.compteur_prio.value -= 1
                 with self.chemin_prio_lock:
-                    self.mq_priorite.value = oldest_prio.start
+                    self.mq_priorite.value = self.hanging_prio_cars[oldest_prio].start
                 # send signal to Lights
                 os.kill(self.traffic_lights_pid, signal.SIGKILL)
                 while True:
@@ -85,13 +85,13 @@ class Coordinator(Process):
                                 self.hanging_normal_cars[i] = car_from_string(car_message, ty)
                                 if oldest_passing_normal == None and self.traffic_lights[i]:
                                     oldest_passing_normal = i
-                                elif self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal] and self.traffic_lights[i]:
+                                elif self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
                                     oldest_passing_normal = i
                             except sysv_ipc.BusyError:
                                 pass
                         elif oldest_passing_normal == None and self.traffic_lights[i]:
                             oldest_passing_normal = i
-                        elif self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal] and self.traffic_lights[i]:
+                        elif self.hanging_normal_cars[i] != None and self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
                             oldest_passing_normal = i
                     if oldest_passing_normal != None:
                         with self.lock_normal:

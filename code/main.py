@@ -41,11 +41,12 @@ if __name__ == "__main__":
     the_sender.start()
 
 
-    for key in MQ_KEYS:
-        mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
-        mq.remove()
-
     normal_traffic_gen.join()
     prio_traffic_gen.join()
     the_lights.join()
     the_coordinator.join()
+    the_sender.join()
+
+    for key in MQ_KEYS:
+        mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
+        mq.remove()
