@@ -11,6 +11,8 @@ MQ_KEYS = [128, 256, 512, 1024]
 if __name__ == "__main__":
     for key in MQ_KEYS:        
         mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
+        mq.remove()
+        mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
 
     sent_messages_queue = Queue(10000)
     chemin_prio_lock = Lock()
@@ -19,13 +21,13 @@ if __name__ == "__main__":
     compteur_limiteur_normal = Value('i', 0, lock=False)
     lock_limiteur_normal = Lock()
 
-    normal_traffic_gen = normal.Normal(compteur_limiteur_normal, MQ_KEYS, lock_limiteur_normal)
+    normal_traffic_gen = normal.Normal(compteur_limiteur_normal, MQ_KEYS, lock_limiteur_normal, sent_messages_queue)
     normal_traffic_gen.start()
 
     compteur_limiteur_prio = Value('i', 0, lock=False)
     lock_limiteur_prio = Lock()
 
-    prio_traffic_gen = priority.Priority(compteur_limiteur_prio, MQ_KEYS, lock_limiteur_prio)
+    prio_traffic_gen = priority.Priority(compteur_limiteur_prio, MQ_KEYS, lock_limiteur_prio, sent_messages_queue)
     prio_traffic_gen.start()
 
     traffic_lights = Array('i', 4, lock=False)

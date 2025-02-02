@@ -1,6 +1,7 @@
 from multiprocessing import Process, Lock
 import sysv_ipc
 import random
+import time
 
 class Priority(Process):
 
@@ -19,9 +20,10 @@ class Priority(Process):
             with self.lock_compteur_global:
                     compteur_temporaire = self.compteur_global.value
             #boucle principale
+            
             if compteur_temporaire <= 20:
-
                 #print("TICK PRIORITY")
+                #print(f"PRIO AT {compteur_temporaire}")
                 #choisit de manière random où mettre une voiture
                 depart = random.randint(0,3)
                 arrivee = random.randint(0,3)
@@ -31,9 +33,10 @@ class Priority(Process):
                 texte = f"{self.id}_{depart}_{arrivee}"
                 #print("adding prio", texte)
                 mq = self.messageQueues[depart]
-                mq.send(texte, type=2)
-                self.sent_messages_queue.put(f"NEW {self.id} {depart} {arrivee} 2")
+                mq.send(texte.encode(), type=2)
+                self.sent_messages_queue.put(f"NEW {self.id} {depart} {arrivee} 2 {compteur_temporaire}")
                 with self.lock_compteur_global:
                     self.compteur_global.value += 1
                     compteur_temporaire = self.compteur_global.value
                 self.id += 1
+            time.sleep(random.uniform(0.001, 0.005))

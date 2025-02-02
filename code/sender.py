@@ -25,7 +25,7 @@ class Sender(Process):
                 for client in list(self.clients):
                     try:
                         client.send(message.encode('utf-8'))
-                    except BrokenPipeError:
+                    except BrokenPipeError or ConnectionResetError:
                         # Client disconnected; remove from the list
                         self.clients.remove(client)
             except Empty:

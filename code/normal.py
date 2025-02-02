@@ -1,6 +1,7 @@
 from multiprocessing import Process, Lock
 import sysv_ipc
 import random
+import time
 
 class Normal(Process):
 
@@ -20,7 +21,8 @@ class Normal(Process):
                     compteur_temporaire = self.compteur_global.value
             #boucle principale
             if compteur_temporaire <= 100:
-                #print("TICK NORMAL")
+
+                #print(f"NORMAL AT {compteur_temporaire}")
                 #choisit de manière random où mettre une voiture
                 depart = random.randint(0,3)
                 arrivee = random.randint(0,3)
@@ -30,9 +32,10 @@ class Normal(Process):
                 texte = f"{self.id}_{depart}_{arrivee}"
                 #print("adding normal", texte)
                 mq = self.messageQueues[depart]
-                mq.send(texte, type=1)
-                self.sent_messages_queue.put(f"NEW {self.id} {depart} {arrivee} 1")
+                mq.send(texte.encode(), type=1)
+                self.sent_messages_queue.put(f"NEW {self.id} {depart} {arrivee} 1 {compteur_temporaire}")
                 with self.lock_compteur_global:
                     self.compteur_global.value += 1
                     compteur_temporaire = self.compteur_global.value
                 self.id += 1
+            time.sleep(random.uniform(0.0001, 0.003))

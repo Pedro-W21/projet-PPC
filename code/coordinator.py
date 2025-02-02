@@ -99,20 +99,21 @@ class Coordinator(Process):
                         if self.hanging_normal_cars[i] == None:
                             try:
                                 car_message, ty = self.message_queues[i].receive(type=1, block=False)
-                                self.hanging_normal_cars[i] = car_from_string(car_message, ty)
+                                self.hanging_normal_cars[i] = car_from_string(car_message.decode(), ty)
                                 if oldest_passing_normal == None and self.traffic_lights[i]:
                                     oldest_passing_normal = i
-                                elif self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
+                                elif oldest_passing_normal != None and self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
                                     oldest_passing_normal = i
                             except sysv_ipc.BusyError:
                                 pass
                         elif oldest_passing_normal == None and self.traffic_lights[i]:
                             oldest_passing_normal = i
-                        elif self.hanging_normal_cars[i] != None and self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
+                        elif oldest_passing_normal != None and self.hanging_normal_cars[i] != None and self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
                             oldest_passing_normal = i
+                    #print(oldest_passing_normal)
                     if oldest_passing_normal != None:
                         with self.lock_normal:
                             self.compteur_normal.value -= 1
-                        self.send_car_passed(self.hanging_normal_cars[i])
-                        self.hanging_normal_cars[i] = None
-
+                        self.send_car_passed(self.hanging_normal_cars[oldest_passing_normal])
+                        self.hanging_normal_cars[oldest_passing_normal] = None
+            time.sleep(random.uniform(0.00001, 0.001))
