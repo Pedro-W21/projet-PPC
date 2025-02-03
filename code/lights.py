@@ -49,11 +49,11 @@ class Lights(Process):
                     self.traffic_lights[2] = 1
                     self.traffic_lights[3] = 0
                 #puis on fait le négatif
-                for i in self.traffic_lights:
+                for i in range(len(self.traffic_lights)):
                     if i == 0:
-                        i = 1
+                        self.traffic_lights[i] = 1
                     else:
-                        i = 0
+                        self.traffic_lights[i] = 0
                 
 
         
