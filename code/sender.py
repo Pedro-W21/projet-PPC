@@ -24,7 +24,9 @@ class Sender(Process):
                 # Iterate through a copy in case the list changes during iteration
                 for client in list(self.clients):
                     try:
+                        
                         client.send(message.encode('utf-8'))
+                        #print(message)
                     except BrokenPipeError or ConnectionResetError:
                         # Client disconnected; remove from the list
                         self.clients.remove(client)

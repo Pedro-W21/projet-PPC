@@ -20,27 +20,29 @@ class Display:
         print("Connection réussie")
     def handle_message(self, message:str):
         parts = message.split(" ")
+        self.last_parts = parts
+        #counters_string = f"{parts}"
+        #self.stdscr.addstr(self.smallest_dimension - 3, self.smallest_dimension - len(counters_string), counters_string)
         car_index = int(parts[2])
         if parts[0] == "NEW":
-            if parts[-2] == "1":
-                self.cars_per_road[car_index] = int(message[-1])
-            elif parts[-2] == "2":
-                self.prio_cars_per_road[car_index] = int(message[-1])
+            if int(parts[-2]) == 1:
+                self.cars_per_road[car_index] += 1
+            elif int(parts[-2]) == 2:
+                self.prio_cars_per_road[car_index] += 1
         elif parts[0] == "PASSED":
-            if parts[-1] == "1":
-                if self.cars_per_road[car_index] > 0:
-                    self.cars_per_road[car_index] -= 1
-                    self.someone_passing = 1
-                    self.traffic_signals[car_index] = 1
-                    self.traffic_signals[(car_index + 1) % len(self.traffic_signals)] = 0
-                    self.traffic_signals[(car_index + 2) % len(self.traffic_signals)] = 1
-                    self.traffic_signals[(car_index + 3) % len(self.traffic_signals)] = 0
-            elif parts[-1] == "2":
-                if self.prio_cars_per_road[car_index] > 0:
-                    self.prio_cars_per_road[car_index] -= 1
-                    self.someone_passing = 2
-                    self.traffic_signals = [0, 0, 0, 0]
-                    self.traffic_signals[car_index] = 1
+            if int(parts[-2]) == 1:
+                self.cars_per_road[car_index] = int(parts[-1])
+                self.someone_passing = 1
+                self.traffic_signals[car_index] = 1
+                self.traffic_signals[(car_index + 1) % len(self.traffic_signals)] = 0
+                self.traffic_signals[(car_index + 2) % len(self.traffic_signals)] = 1
+                self.traffic_signals[(car_index + 3) % len(self.traffic_signals)] = 0
+            elif int(parts[-2]) == 2:
+                self.prio_cars_per_road[car_index] = int(parts[-1])
+                self.someone_passing = 2
+                self.traffic_signals = [0, 0, 0, 0]
+                self.traffic_signals[car_index] = 1
+                self.prio_cars_per_road
     def full_refresh(self):
         """
         Your code goes here
@@ -89,6 +91,9 @@ class Display:
         self.stdscr.addstr(0, self.smallest_dimension - len(counters_string), counters_string)
         counters_string = f"{self.prio_cars_per_road}"
         self.stdscr.addstr(1, self.smallest_dimension - len(counters_string), counters_string)
+        #counters_string = f"{self.last_parts}"
+        #print(counters_string, self.cars_per_road, self.prio_cars_per_road)
+        #self.stdscr.addstr(2, self.smallest_dimension - len(counters_string), counters_string)
 
         
 
@@ -102,7 +107,7 @@ class Display:
 
 def main(stdscr):
     if __name__ == "__main__":
-        client = Display(stdscr, 30, 40)
+        client = Display(stdscr, 20, 40)
         client.listening_loop()
 
 curses.wrapper(main)

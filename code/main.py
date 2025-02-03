@@ -17,29 +17,37 @@ if __name__ == "__main__":
     sent_messages_queue = Queue(10000)
     chemin_prio_lock = Lock()
     chemin_prio_value = Value('i', 0, lock=False)
+    static_time_scale_value = Value('f', 0.01, lock=False)
+    static_time_scale_lock = Lock()
+    variable_time_scale_value = Value('f', 0.05, lock=False)
+    variable_time_scale_lock = Lock()
+
+
 
     compteur_limiteur_normal = Value('i', 0, lock=False)
     lock_limiteur_normal = Lock()
+    normal_cars_per_road = Array('i', 4, lock=False)
 
-    normal_traffic_gen = normal.Normal(compteur_limiteur_normal, MQ_KEYS, lock_limiteur_normal, sent_messages_queue)
+    normal_traffic_gen = normal.Normal(compteur_limiteur_normal, MQ_KEYS, lock_limiteur_normal, sent_messages_queue, static_time_scale_value, static_time_scale_lock, variable_time_scale_value, variable_time_scale_lock, normal_cars_per_road)
     normal_traffic_gen.start()
 
     compteur_limiteur_prio = Value('i', 0, lock=False)
     lock_limiteur_prio = Lock()
+    prio_cars_per_road = Array('i', 4, lock=False)
 
-    prio_traffic_gen = priority.Priority(compteur_limiteur_prio, MQ_KEYS, lock_limiteur_prio, sent_messages_queue)
+    prio_traffic_gen = priority.Priority(compteur_limiteur_prio, MQ_KEYS, lock_limiteur_prio, sent_messages_queue, static_time_scale_value, static_time_scale_lock, variable_time_scale_value, variable_time_scale_lock, prio_cars_per_road)
     prio_traffic_gen.start()
 
     traffic_lights = Array('i', 4, lock=False)
     traffic_lights_lock = Lock()
     
-    the_lights = lights.Lights(traffic_lights, traffic_lights_lock, MQ_KEYS, chemin_prio_lock, chemin_prio_value)
+    the_lights = lights.Lights(traffic_lights, traffic_lights_lock, MQ_KEYS, chemin_prio_lock, chemin_prio_value, static_time_scale_value, static_time_scale_lock, variable_time_scale_value, variable_time_scale_lock)
     the_lights.start()
 
     the_sender = sender.Sender(sent_messages_queue)
     the_sender.start()
 
-    the_coordinator = coordinator.Coordinator(compteur_limiteur_normal, lock_limiteur_normal, compteur_limiteur_prio, lock_limiteur_prio, traffic_lights, traffic_lights_lock, MQ_KEYS, the_lights.pid, sent_messages_queue, chemin_prio_lock, chemin_prio_value)
+    the_coordinator = coordinator.Coordinator(compteur_limiteur_normal, lock_limiteur_normal, compteur_limiteur_prio, lock_limiteur_prio, traffic_lights, traffic_lights_lock, MQ_KEYS, the_lights.pid, sent_messages_queue, chemin_prio_lock, chemin_prio_value, static_time_scale_value, static_time_scale_lock, variable_time_scale_value, variable_time_scale_lock, normal_cars_per_road, prio_cars_per_road)
     the_coordinator.start()
 
 

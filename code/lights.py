@@ -1,16 +1,22 @@
 import signal, time
 from multiprocessing import Process
+from math import sin
 
 
 class Lights(Process):
 
-    def __init__(self, lights_array, lights_array_lock, key_queues, chemin_priorite_lock, mqpriorite):
+    def __init__(self, lights_array, lights_array_lock, key_queues, chemin_priorite_lock, mqpriorite, static_time_scale, static_time_scale_lock, variable_time_scale, variable_time_scale_lock):
         super().__init__()
         self.traffic_lights = lights_array #array de 4 elements 0 ou 1
         self.keyQueues = key_queues #liste des key pour accéder aux 4 messageQueue/chemins
         self.lock = lights_array_lock
         self.lockprio = chemin_priorite_lock #lock pour la variable qui stocke le chemin d'où vient le véhicule prioritaire
         self.mqpriorite = mqpriorite #chemin d'où vient le véhicule prioritaire
+        self.static_time_scale = static_time_scale
+        self.static_time_scale_lock = static_time_scale_lock
+        self.variable_time_scale = variable_time_scale
+        self.variable_time_scale_lock = variable_time_scale_lock
+        self.start_time = time.time()
 
     def handler(self,sig,frame):
         if sig == signal.SIGUSR1:
@@ -33,7 +39,9 @@ class Lights(Process):
         signal.signal(signal.SIGUSR1, self.handler)
         #mode normal:
         while True:
-            time.sleep(1) #les lumières changent toutes les 2 sec
+            with self.static_time_scale_lock:
+                static_time_scale = self.static_time_scale.value
+            time.sleep(static_time_scale * 10.0)
             # print("TRAFFIC ALIVE")
             with self.lock:
                 #vérifie si on est bien dans l'état normal et pas prioritaire, c'est-à-dire 2 feux verts pour 2 feux rouges et non 1 feu vert pour 3 feux rouges
