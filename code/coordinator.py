@@ -129,4 +129,4 @@ class Coordinator(Process):
                         self.hanging_normal_cars[oldest_passing_normal] = None
             with self.static_time_scale_lock:
                 static_time_scale = self.static_time_scale.value
-            time.sleep(static_time_scale * 2.0)
+            time.sleep(static_time_scale * 1.2)

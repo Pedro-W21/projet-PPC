@@ -5,10 +5,21 @@ import priority
 import lights
 import coordinator
 import sender
+import sys
 
 MQ_KEYS = [128, 256, 512, 1024]
 
 if __name__ == "__main__":
+    args_cons = sys.argv
+    if len(args_cons) == 2:
+        static_time_scale = float(args_cons[1])
+        variable_time_scale = 0.05
+    elif len(args_cons) == 3:
+        static_time_scale = float(args_cons[1])
+        variable_time_scale = float(args_cons[2])
+    else:
+        static_time_scale = 0.01
+        variable_time_scale = 0.05
     for key in MQ_KEYS:        
         mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
         mq.remove()
@@ -17,9 +28,9 @@ if __name__ == "__main__":
     sent_messages_queue = Queue(10000)
     chemin_prio_lock = Lock()
     chemin_prio_value = Value('i', 0, lock=False)
-    static_time_scale_value = Value('f', 0.01, lock=False)
+    static_time_scale_value = Value('f', static_time_scale, lock=False)
     static_time_scale_lock = Lock()
-    variable_time_scale_value = Value('f', 0.05, lock=False)
+    variable_time_scale_value = Value('f', variable_time_scale, lock=False)
     variable_time_scale_lock = Lock()
 
 
