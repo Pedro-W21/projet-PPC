@@ -87,13 +87,10 @@ class Display:
             self.stdscr.hline(middle-1, middle-1, " ", 2)
             self.stdscr.hline(middle, middle-1, " ", 2)
 
-        counters_string = f"{self.cars_per_road}"
-        self.stdscr.addstr(0, self.smallest_dimension - len(counters_string), counters_string)
-        counters_string = f"{self.prio_cars_per_road}"
-        self.stdscr.addstr(1, self.smallest_dimension - len(counters_string), counters_string)
-        #counters_string = f"{self.last_parts}"
-        #print(counters_string, self.cars_per_road, self.prio_cars_per_road)
-        #self.stdscr.addstr(2, self.smallest_dimension - len(counters_string), counters_string)
+        #counters_string = f"{self.cars_per_road}"
+        #self.stdscr.addstr(0, self.smallest_dimension - len(counters_string), counters_string)
+        #counters_string = f"{self.prio_cars_per_road}"
+        #self.stdscr.addstr(1, self.smallest_dimension - len(counters_string), counters_string)
 
         
 
