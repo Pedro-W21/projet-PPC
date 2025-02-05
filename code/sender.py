@@ -18,33 +18,32 @@ class Sender(Process):
 
     def run(self):
         while True:
-            # Check if there's a message to send
             try:
                 message = self.sent_messages_queue.get_nowait()
-                # Iterate through a copy in case the list changes during iteration
+                # on itère sur une copie pour pouvoir remove sans problèmes pendant l'itération
                 for client in list(self.clients):
                     try:
                         
                         client.send(message.encode('utf-8'))
-                        #print(message)
-                    except BrokenPipeError or ConnectionResetError:
-                        # Client disconnected; remove from the list
+                    except BrokenPipeError:
+                        self.clients.remove(client)
+                    except ConnectionResetError:
+                        self.clients.remove(client)
+                    except ConnectionAbortedError:
+                        self.clients.remove(client)
+                    except ConnectionRefusedError:
                         self.clients.remove(client)
             except Empty:
-                # No messages to send; proceed to check for new connections
                 pass
 
-            # Attempt to accept new connections in a non-blocking way
             try:
                 client_socket, addr = self.server_socket.accept()
                 client_socket.setblocking(False)
                 self.clients.append(client_socket)
             except BlockingIOError:
-                # No pending connections; continue the loop
+                # pas de nouvelles connections, on continue
                 pass
             except Exception as e:
-                # Handle any other exceptions that may occur
                 print(f"Exception occurred: {e}")
-
-            # Sleep briefly to prevent high CPU usage
+            
             time.sleep(0.001)
