@@ -5,8 +5,6 @@ import signal
 import os
 import time
 
-PORT_COORD = 2000
-
 class Car:
     def __init__(self, car_type, id, start, end):
         self.car_type = car_type
@@ -49,7 +47,10 @@ class Coordinator(Process):
         self.sent_messages_queue.put(f"PASSED {car.id} {car.start} {car.end} {car.car_type} {val}")
 
     def run(self):
+        
         while True:
+            with self.static_time_scale_lock:
+                static_time_scale = self.static_time_scale.value
             # décommenter la ligne suivante pour avoir une notion de la vitesse de la simulation à l'exécution
             #print(f"--------------------\n TICK COORD {self.tick}")
             self.tick += 1
@@ -92,7 +93,7 @@ class Coordinator(Process):
                             if self.mq_priorite.value == 5:
                                 self.mq_priorite.value = 6
                                 break
-                        time.sleep(0.00001)
+                        time.sleep(static_time_scale * 0.001)
                 # Une fois qu'on est sûrs que les feux sont verts, on envoie la voiture
                 self.send_car_passed(self.hanging_prio_cars[oldest_prio], temp)
                 self.hanging_prio_cars[oldest_prio] = None
@@ -102,7 +103,7 @@ class Coordinator(Process):
                         with self.chemin_prio_lock:
                             if self.mq_priorite.value == 7:
                                 break
-                        time.sleep(0.00001)
+                        time.sleep(static_time_scale * 0.001)
                 
             else:
                 with self.traffic_lights_lock:
@@ -137,6 +138,4 @@ class Coordinator(Process):
                             temp = self.normal_cars_per_road[oldest_passing_normal]
                         self.send_car_passed(self.hanging_normal_cars[oldest_passing_normal], temp)
                         self.hanging_normal_cars[oldest_passing_normal] = None
-            with self.static_time_scale_lock:
-                static_time_scale = self.static_time_scale.value
-            time.sleep(static_time_scale * 1.2)
+            time.sleep(static_time_scale * 0.8)

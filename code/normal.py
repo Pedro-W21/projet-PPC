@@ -27,7 +27,7 @@ class Normal(Process):
             with self.lock_compteur_global:
                     compteur_temporaire = self.compteur_global.value
             #boucle principale
-            if compteur_temporaire <= 100:
+            if compteur_temporaire <= 25:
 
                 #choisit de manière random où mettre une voiture
                 depart = random.randint(0,3)
@@ -49,4 +49,4 @@ class Normal(Process):
             with self.variable_time_scale_lock:
                 variable_time_scale = self.variable_time_scale.value
             right_now = time.time()
-            time.sleep(abs(sin((right_now - self.start_time) * variable_time_scale)) * variable_time_scale + static_time_scale)
+            time.sleep(abs(sin((right_now - self.start_time) * variable_time_scale)) * variable_time_scale + static_time_scale * 0.2)

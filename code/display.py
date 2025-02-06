@@ -68,8 +68,8 @@ class Display:
         traffic_lights_pos = [(middle - 3, middle - 2), (middle - 2, middle + 2), (middle + 2, middle + 2), (middle + 1, middle - 3)]
         for i in range(4):
             func = self.stdscr.vline if i % 2 == 0 else self.stdscr.hline
-            empty_part_normal = (total_length - int(min(max((self.cars_per_road[i]/100) * total_length, 1), total_length))) if self.cars_per_road[i] != 0 else total_length
-            empty_part_prio = (total_length - int(min(max((self.prio_cars_per_road[i]/20) * total_length, 1), total_length))) if self.prio_cars_per_road[i] != 0 else total_length
+            empty_part_normal = (total_length - int(min(max((self.cars_per_road[i]/25) * total_length, 1), total_length))) if self.cars_per_road[i] != 0 else total_length
+            empty_part_prio = (total_length - int(min(max((self.prio_cars_per_road[i]/8) * total_length, 1), total_length))) if self.prio_cars_per_road[i] != 0 else total_length
             y_add = 1 if i % 2 == 0 else 0
             x_add = 1 if i % 2 == 1 else 0
             if inverted[i]:

@@ -13,13 +13,13 @@ if __name__ == "__main__":
     args_cons = sys.argv
     if len(args_cons) == 2:
         static_time_scale = float(args_cons[1])
-        variable_time_scale = 0.05
+        variable_time_scale = 2.0
     elif len(args_cons) == 3:
         static_time_scale = float(args_cons[1])
         variable_time_scale = float(args_cons[2])
     else:
-        static_time_scale = 0.01
-        variable_time_scale = 0.05
+        static_time_scale = 0.6
+        variable_time_scale = 2.0
 
     # on ouvre, on ferme et on réouvre chaque MessageQueue au cas où elle soit déjà ouverte pour éviter les effets de bord
     for key in MQ_KEYS:        
