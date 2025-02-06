@@ -91,12 +91,12 @@ class Coordinator(Process):
                 while True:
                         with self.chemin_prio_lock:
                             if self.mq_priorite.value == 5:
+                                # Une fois qu'on est sûrs que les feux sont verts, on envoie la voiture
+                                self.send_car_passed(self.hanging_prio_cars[oldest_prio], temp)
+                                self.hanging_prio_cars[oldest_prio] = None
                                 self.mq_priorite.value = 6
                                 break
                         time.sleep(static_time_scale * 0.001)
-                # Une fois qu'on est sûrs que les feux sont verts, on envoie la voiture
-                self.send_car_passed(self.hanging_prio_cars[oldest_prio], temp)
-                self.hanging_prio_cars[oldest_prio] = None
 
                 # On attend que Lights soit sorti de son handler avant de continuer
                 while True:
