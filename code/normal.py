@@ -29,7 +29,6 @@ class Normal(Process):
             #boucle principale
             if compteur_temporaire <= 100:
 
-                #print(f"NORMAL AT {compteur_temporaire}")
                 #choisit de manière random où mettre une voiture
                 depart = random.randint(0,3)
                 arrivee = random.randint(0,3)

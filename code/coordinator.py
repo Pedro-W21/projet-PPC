@@ -50,23 +50,30 @@ class Coordinator(Process):
 
     def run(self):
         while True:
-            print(f"--------------------\n TICK COORD {self.tick}")
+            # décommenter la ligne suivante pour avoir une notion de la vitesse de la simulation à l'exécution
+            #print(f"--------------------\n TICK COORD {self.tick}")
             self.tick += 1
             oldest_prio = None
             for i in range(4):
+                # Si on a pas encore de voiture prioritaire "in flight" pour ce segment de route
                 if self.hanging_prio_cars[i] == None:
+                    # on essaie de récupérer la voiture prioritaire la plus vielle de la MessageQueue correspondante
                     try:
                         car_message, ty = self.message_queues[i].receive(type=2, block=False)
                         self.hanging_prio_cars[i] = car_from_string(car_message.decode(), ty)
+                        # si il n'y a pas encore d'autre voiture prioritaire
                         if oldest_prio == None:
                             oldest_prio = i
+                        # Si l'autre voiture prioritaire attend depuis moins longtemps et y'en a pas en attente à notre droite
                         elif self.hanging_prio_cars[i].id < self.hanging_prio_cars[oldest_prio].id and self.hanging_prio_cars[i-1] == None:
                             oldest_prio = i
                          
                     except sysv_ipc.BusyError:
                         pass
+                # si il n'y a pas encore d'autre voiture prioritaire
                 elif oldest_prio == None:
                     oldest_prio = i
+                # Si l'autre voiture prioritaire attend depuis moins longtemps et y'en a pas en attente à notre droite
                 elif self.hanging_prio_cars[i] != None and self.hanging_prio_cars[i].id < self.hanging_prio_cars[oldest_prio].id and self.hanging_prio_cars[i-1] == None:
                     oldest_prio = i
                 
@@ -76,50 +83,53 @@ class Coordinator(Process):
                     self.prio_cars_per_road[oldest_prio] -= 1
                     temp = self.prio_cars_per_road[oldest_prio]
                 with self.chemin_prio_lock:
+                    # on indique à Lights le chemin à rendre vert
                     self.mq_priorite.value = oldest_prio
                 # send signal to Lights
                 os.kill(self.traffic_lights_pid, signal.SIGUSR1)
-                #print(oldest_prio, self.hanging_prio_cars[oldest_prio].start)
                 while True:
-                    #with self.traffic_lights_lock:
-                        #print(self.traffic_lights[oldest_prio])
                         with self.chemin_prio_lock:
                             if self.mq_priorite.value == 5:
                                 self.mq_priorite.value = 6
                                 break
-                        #print("IN TRAFFIC LIGHTS LOCK")
-                        time.sleep(0.001)
-                #time.sleep(1)
+                        time.sleep(0.00001)
+                # Une fois qu'on est sûrs que les feux sont verts, on envoie la voiture
                 self.send_car_passed(self.hanging_prio_cars[oldest_prio], temp)
                 self.hanging_prio_cars[oldest_prio] = None
+
+                # On attend que Lights soit sorti de son handler avant de continuer
                 while True:
-                    #with self.traffic_lights_lock:
-                        #print(self.traffic_lights[oldest_prio])
                         with self.chemin_prio_lock:
                             if self.mq_priorite.value == 7:
                                 break
-                        #print("IN TRAFFIC LIGHTS LOCK")
-                        time.sleep(0.001)
+                        time.sleep(0.00001)
                 
             else:
                 with self.traffic_lights_lock:
                     oldest_passing_normal = None
                     for i in range(4):
+                        # Si on a pas encore de voiture normale "in flight" pour ce segment de route
                         if self.hanging_normal_cars[i] == None:
+                            # on essaie de récupérer la voiture normale la plus vieille de la MessageQueue correspondante
                             try:
                                 car_message, ty = self.message_queues[i].receive(type=1, block=False)
                                 self.hanging_normal_cars[i] = car_from_string(car_message.decode(), ty)
+                                # si les lumières sont bonnes et on a pas d'autre voiture à faire passer
                                 if oldest_passing_normal == None and self.traffic_lights[i]:
                                     oldest_passing_normal = i
+                                # Sinon si l'autre voiture est plus jeune
                                 elif oldest_passing_normal != None and self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
                                     oldest_passing_normal = i
                             except sysv_ipc.BusyError:
                                 pass
+                        
+                        # si les lumières sont bonnes et on a pas d'autre voiture à faire passer
                         elif oldest_passing_normal == None and self.traffic_lights[i]:
                             oldest_passing_normal = i
+                        # Sinon si l'autre voiture est plus jeune
                         elif oldest_passing_normal != None and self.hanging_normal_cars[i] != None and self.hanging_normal_cars[i].id < self.hanging_normal_cars[oldest_passing_normal].id and self.traffic_lights[i]:
                             oldest_passing_normal = i
-                    #print(oldest_passing_normal)
+                    # Si on a une voiture à faire passer
                     if oldest_passing_normal != None:
                         with self.lock_normal:
                             self.compteur_normal.value -= 1

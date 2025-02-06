@@ -27,9 +27,11 @@ class Lights(Process):
                         self.traffic_lights[i] = 1
                     else:
                         self.traffic_lights[i] = 0
+                # on signale qu'on a changé les lights
                 self.mqpriorite.value = 5
             while True:
                 with self.lockprio:
+                    # si cette valeur change, c'est que les voitures sont passées
                     if self.mqpriorite.value != 5:
                         self.mqpriorite.value = 7
                         break
@@ -42,7 +44,6 @@ class Lights(Process):
             with self.static_time_scale_lock:
                 static_time_scale = self.static_time_scale.value
             time.sleep(static_time_scale * 10.0)
-            # print("TRAFFIC ALIVE")
             with self.lock:
                 #vérifie si on est bien dans l'état normal et pas prioritaire, c'est-à-dire 2 feux verts pour 2 feux rouges et non 1 feu vert pour 3 feux rouges
                 

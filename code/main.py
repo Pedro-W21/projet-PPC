@@ -20,6 +20,8 @@ if __name__ == "__main__":
     else:
         static_time_scale = 0.01
         variable_time_scale = 0.05
+
+    # on ouvre, on ferme et on réouvre chaque MessageQueue au cas où elle soit déjà ouverte pour éviter les effets de bord
     for key in MQ_KEYS:        
         mq = sysv_ipc.MessageQueue(key, sysv_ipc.IPC_CREAT)
         mq.remove()

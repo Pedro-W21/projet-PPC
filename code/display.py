@@ -19,6 +19,12 @@ class Display:
         self.smallest_dimension = display_width if display_width < display_height else display_height
         print("Connection réussie")
     def handle_message(self, message:str):
+        """
+        Met à jour les variables locales de la simulation en fonction du contenu du message venant de celle-ci
+
+        input : message (str), un string de message de simulation valide
+        output : rien
+        """
         parts = message.split(" ")
         self.last_parts = parts
         #counters_string = f"{parts}"
@@ -45,7 +51,10 @@ class Display:
                 self.prio_cars_per_road
     def full_refresh(self):
         """
-        Your code goes here
+        Met à jour l'affichage de la simulation avec les informations de simulation les plus récentes
+
+        input : rien
+        output : modifie et rafraîchit son affichage dans son terminal cible
         """
         middle = self.smallest_dimension // 2
         total_length = middle - 2
@@ -96,7 +105,14 @@ class Display:
 
         self.stdscr.refresh()
     def listening_loop(self):
+        """
+        Boucle infinie d'écoute sur le lien TCP et de mise à jour de l'affichage
+
+        input : rien
+        output : mise à jour de l'affichage de la console (par self.full_refresh())
+        """
         while True:
+            # Appel bloquant, mais c'est pas grave ici car on a pas d'interaction avec l'utilisateur
             data = self.client_socket.recv(1024)
             self.handle_message(data.decode())
             self.full_refresh()
@@ -107,6 +123,7 @@ def main(stdscr):
         client = Display(stdscr, 20, 40)
         client.listening_loop()
 
+# curses.wrapper met le terminal dans le bon mode avant de lancer le programme et le sort de façon safe avant de l'éteindre en cas d'erreur
 curses.wrapper(main)
         
         
